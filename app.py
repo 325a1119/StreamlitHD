@@ -13,12 +13,8 @@ st.set_page_config(page_title="CASINO POKER", layout="centered")
 # =========================
 st.markdown("""
 <style>
-.main { background-color:#0b3d2e; }
-.table {
-    background:#ffffff;
-    padding:12px;
-    border-radius:10px;
-    font-size:14px;
+.stApp {
+    background: radial-gradient(circle at center, #0b3d2e 0%, #05231a 80%);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -270,3 +266,4 @@ elif st.session_state.phase == "result":
         for k in list(st.session_state.keys()):
             if k.startswith("k"):
                 del st.session_state[k]
+

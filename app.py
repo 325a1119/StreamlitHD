@@ -1,7 +1,5 @@
 import streamlit as st
 import random
-from PIL import Image, ImageDraw, ImageFont
-import io
 
 # =========================
 # ページ設定
@@ -11,45 +9,47 @@ st.set_page_config(page_title="CASINO POKER", layout="centered")
 # =========================
 # CSS（カジノ風UI）
 # =========================
-@st.cache_data
-def generate_card_image(rank, suit):
-    img = Image.new("RGB", (120, 180), "white")
-    draw = ImageDraw.Draw(img)
-
-    # OSごとのフォントパスのリスト（代表的なもの）
-    fonts_to_try = [
-        "C:/Windows/Fonts/msgothic.ttc",   # Windows
-        "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf", # Linux (Streamlit Cloud)
-        "/System/Library/Fonts/Hiragino Sans GB.ttc", # macOS
-        "C:/Windows/Fonts/seguiemj.ttf"    # Emoji
-    ]
-
-    font_big = None
-    font_small = None
-
-    for fpath in fonts_to_try:
-        try:
-            font_big = ImageFont.truetype(fpath, 48)
-            font_small = ImageFont.truetype(fpath, 32)
-            break # 読み込めたら終了
-        except:
-            continue
-
-    if font_big is None:
-        font_big = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-
-    color = "red" if suit in ["♥","♦","♡"] else "black"
-
-    # カードの外枠
-    draw.rectangle((0,0,119,179), outline="black", width=3)
-
-    # 左上の数字とスート
-    draw.text((8,5), f"{rank}{suit}", fill=color, font=font_small)
-    # 中央の大きなスート
-    draw.text((40,70), suit, fill=color, font=font_big)
-
-    return img
+st.markdown("""
+<style>
+.stApp {
+    background: radial-gradient(circle at center, #0b3d2e 0%, #05231a 80%);
+}
+/* カードの基本スタイル */
+.playing-card {
+    width: 100px;
+    height: 145px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+    user-select: none;
+    margin: 0 auto;
+}
+.card-rank {
+    font-size: 18px;
+    font-weight: bold;
+    width: 100%;
+    text-align: left;
+    margin-left: 10px;
+}
+.card-suit {
+    font-size: 48px;
+}
+.card-rank-reverse {
+    font-size: 18px;
+    font-weight: bold;
+    width: 100%;
+    text-align: right;
+    margin-right: 10px;
+    transform: rotate(180deg);
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🎰 CASINO POKER")
 
@@ -86,38 +86,23 @@ HAND_EXAMPLE = {
 }
 
 # =========================
-# カード画像生成
+# カード表示関数（HTML/CSS）
 # =========================
-@st.cache_data
-def generate_card_image(rank, suit):
-    img = Image.new("RGB", (120, 180), "white")
-    draw = ImageDraw.Draw(img)
-
-    try:
-        font_big = ImageFont.truetype("C:/Windows/Fonts/seguiemj.ttf", 48)
-        font_small = ImageFont.truetype("C:/Windows/Fonts/seguiemj.ttf", 32)
-    except:
-        font_big = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-
-    color = "red" if suit in ["♥","♦","♡"] else "black"
-
-    draw.rectangle((0,0,119,179), outline="black", width=3)
-
-    draw.text((8,5), f"{rank}{suit}", fill=color, font=font_small)
-    draw.text((40,70), suit, fill=color, font=font_big)
-
-    return img
-
-
 def show_card(card):
-    img = generate_card_image(card[0], card[1])
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    st.image(buf.getvalue(), width=120)
+    rank, suit = card
+    color = "#d63031" if suit in ["♥","♦"] else "#2d3436"
+    
+    card_html = f"""
+    <div class="playing-card" style="color: {color};">
+        <div class="card-rank">{rank}</div>
+        <div class="card-suit">{suit}</div>
+        <div class="card-rank-reverse">{rank}</div>
+    </div>
+    """
+    st.markdown(card_html, unsafe_allow_html=True)
 
 # =========================
-# ゲーム関数
+# ゲームロジック
 # =========================
 def create_deck():
     deck = [(r,s) for s in SUITS for r in RANKS]
@@ -158,7 +143,6 @@ def strength(hand):
 def cpu_change_indexes(hand):
     role = evaluate(hand)
     ranks = [r for r,s in hand]
-
     if role in ["フルハウス","フォーカード","ストレートフラッシュ","ロイヤルストレートフラッシュ"]:
         return []
     if role in ["フラッシュ","ストレート"]:
@@ -184,19 +168,19 @@ if "player_chip" not in st.session_state:
     st.session_state.game_over = False
 
 st.subheader(
-    f"🧑 あなた：{st.session_state.player_chip:,} 💰   "
+    f"🧑 あなた：{st.session_state.player_chip:,} 💰    "
     f"🤖 CPU：{st.session_state.cpu_chip:,} 💰"
 )
 st.divider()
 
 # =========================
-# YOU WIN / LOSE
+# ゲームオーバー画面
 # =========================
 if st.session_state.game_over:
     if st.session_state.player_chip <= 0:
-        st.subheader("💀 YOU LOSE 💀")
+        st.error("💀 YOU LOSE... チップがなくなりました 💀")
     else:
-        st.subheader("🎉 YOU WIN 🎉")
+        st.success("🎉 YOU WIN! CPUを破産させました 🎉")
 
     if st.button("最初からやり直す"):
         for k in list(st.session_state.keys()):
@@ -204,105 +188,100 @@ if st.session_state.game_over:
         st.rerun()
 
 # =========================
-# ベット
+# フェーズ：ベット
 # =========================
 elif st.session_state.phase == "bet":
-    bet = st.number_input("ベット額",1,st.session_state.player_chip,1)
-    if st.button("カードを配る"):
+    bet = st.number_input("ベット額を選択してください", 100, st.session_state.player_chip, 1000)
+    if st.button("勝負を開始する"):
         st.session_state.bet = bet
         st.session_state.deck = create_deck()
         st.session_state.player_hand = [st.session_state.deck.pop() for _ in range(5)]
         st.session_state.cpu_hand = [st.session_state.deck.pop() for _ in range(5)]
         st.session_state.phase = "draw"
+        st.rerun()
 
 # =========================
-# ドロー
+# フェーズ：ドロー（カード交換）
 # =========================
 elif st.session_state.phase == "draw":
-    col1,col2 = st.columns([3,2])
+    col1, col2 = st.columns([3, 1])
 
     with col1:
         st.subheader("🧑 あなたの手札")
         cols = st.columns(5)
-        keep=[]
-        for i,c in enumerate(st.session_state.player_hand):
+        keep = []
+        for i, c in enumerate(st.session_state.player_hand):
             with cols[i]:
                 show_card(c)
-                keep.append(st.checkbox("KEEP", key=f"k{i}"))
-
-        if st.button("ドロー"):
+                # チェックボックスをカードの下に配置
+                keep.append(st.checkbox("KEEP", key=f"k{i}", value=True))
+        
+        st.write("交換したいカードの「KEEP」を外してください。")
+        
+        if st.button("カードを交換して結果を見る"):
+            # プレイヤーの交換
             for i in range(5):
                 if not keep[i]:
-                    st.session_state.player_hand[i]=st.session_state.deck.pop()
+                    st.session_state.player_hand[i] = st.session_state.deck.pop()
+            # CPUの交換
             for i in cpu_change_indexes(st.session_state.cpu_hand):
-                st.session_state.cpu_hand[i]=st.session_state.deck.pop()
-            st.session_state.phase="result"
+                st.session_state.cpu_hand[i] = st.session_state.deck.pop()
+            st.session_state.phase = "result"
             st.rerun()
 
-        with col2:
-            with st.expander("📜 役・例・倍率", expanded=False):
-                st.markdown("""
-                <div style="
-                    background:#ffffff;
-                    padding:6px;
-                    border-radius:8px;
-                    font-size:11px;
-                    line-height:1.3;
-                ">
-                """, unsafe_allow_html=True)
-
-                for h in HAND_ORDER[::-1]:
-                    st.markdown(
-                        f"**{h}** ×{HAND_MULTIPLIER[h]}<br>"
-                        f"<span style='color:gray'>例：{HAND_EXAMPLE[h]}</span><br>",
-                        unsafe_allow_html=True
-                    )
-
-                st.markdown("</div>", unsafe_allow_html=True)
+    with col2:
+        with st.expander("📜 役一覧と倍率", expanded=True):
+            for h in HAND_ORDER[::-1]:
+                st.markdown(f"**{h}** (x{HAND_MULTIPLIER[h]})")
 
 # =========================
-# 結果
+# フェーズ：結果発表
 # =========================
 elif st.session_state.phase == "result":
     p_role = evaluate(st.session_state.player_hand)
     c_role = evaluate(st.session_state.cpu_hand)
 
-    st.subheader("🧑 あなた")
+    st.subheader("🧑 あなたの手札")
     cols = st.columns(5)
-    for i,c in enumerate(st.session_state.player_hand):
+    for i, c in enumerate(st.session_state.player_hand):
         with cols[i]:
             show_card(c)
-    st.success(p_role)
+    st.info(f"あなたの役: **{p_role}**")
 
-    st.subheader("🤖 CPU")
+    st.divider()
+
+    st.subheader("🤖 CPUの手札")
     cols = st.columns(5)
-    for i,c in enumerate(st.session_state.cpu_hand):
+    for i, c in enumerate(st.session_state.cpu_hand):
         with cols[i]:
             show_card(c)
-    st.error(c_role)
+    st.info(f"CPUの役: **{c_role}**")
 
-    if strength(st.session_state.player_hand) > strength(st.session_state.cpu_hand):
+    # 勝敗判定
+    p_strength = strength(st.session_state.player_hand)
+    c_strength = strength(st.session_state.cpu_hand)
+
+    if p_strength > c_strength:
         gain = st.session_state.bet * HAND_MULTIPLIER[p_role]
         st.session_state.player_chip += gain
         st.session_state.cpu_chip -= gain
-        st.success(f"+{gain:,} 💰")
-    elif strength(st.session_state.player_hand) < strength(st.session_state.cpu_hand):
+        st.balloons()
+        st.success(f"勝利！ {gain:,} 💰 を獲得しました！")
+    elif p_strength < c_strength:
         loss = st.session_state.bet * HAND_MULTIPLIER[c_role]
         st.session_state.player_chip -= loss
         st.session_state.cpu_chip += loss
-        st.error(f"-{loss:,} 💰")
+        st.error(f"敗北... {loss:,} 💰 を失いました。")
     else:
-        st.warning("引き分け")
+        st.warning("引き分け！ チップの移動はありません。")
 
     if st.session_state.player_chip <= 0 or st.session_state.cpu_chip <= 0:
         st.session_state.game_over = True
 
-    if st.button("次のラウンド"):
-        st.session_state.phase="bet"
+    if st.button("次のラウンドへ"):
+        st.session_state.phase = "bet"
+        # KEEP状態をクリア
         for k in list(st.session_state.keys()):
             if k.startswith("k"):
                 del st.session_state[k]
-
-
-
-
+        st.rerun()

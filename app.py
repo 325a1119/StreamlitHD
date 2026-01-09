@@ -62,17 +62,21 @@ def generate_card_image(rank, suit):
     draw = ImageDraw.Draw(img)
 
     try:
-        font = ImageFont.truetype("arial.ttf", 36)
+        font_big = ImageFont.truetype("C:/Windows/Fonts/seguiemj.ttf", 48)
+        font_small = ImageFont.truetype("C:/Windows/Fonts/seguiemj.ttf", 32)
     except:
-        font = ImageFont.load_default()
+        font_big = ImageFont.load_default()
+        font_small = ImageFont.load_default()
 
-    color = "red" if suit in ["♥","♦"] else "black"
+    color = "red" if suit in ["♥","♦","♡"] else "black"
 
     draw.rectangle((0,0,119,179), outline="black", width=3)
-    draw.text((10,10), f"{rank}{suit}", fill=color, font=font)
-    draw.text((30,80), suit, fill=color, font=font)
+
+    draw.text((8,5), f"{rank}{suit}", fill=color, font=font_small)
+    draw.text((40,70), suit, fill=color, font=font_big)
 
     return img
+
 
 def show_card(card):
     img = generate_card_image(card[0], card[1])
@@ -266,4 +270,5 @@ elif st.session_state.phase == "result":
         for k in list(st.session_state.keys()):
             if k.startswith("k"):
                 del st.session_state[k]
+
 

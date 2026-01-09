@@ -11,13 +11,28 @@ st.set_page_config(page_title="CASINO POKER", layout="centered")
 # =========================
 # CSS（カジノ風UI）
 # =========================
-st.markdown("""
-<style>
-.stApp {
-    background: radial-gradient(circle at center, #0b3d2e 0%, #05231a 80%);
-}
-</style>
-""", unsafe_allow_html=True)
+# 代替案：PILを使わずHTML/CSSでカードを作る
+def show_card_css(rank, suit):
+    color = "red" if suit in ["♥","♦"] else "black"
+    st.markdown(f"""
+    <div style="
+        width: 80px;
+        height: 120px;
+        background-color: white;
+        border: 2px solid black;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: {color};
+        font-weight: bold;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    ">
+        <div style="font-size: 20px;">{rank}</div>
+        <div style="font-size: 40px;">{suit}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.title("🎰 CASINO POKER")
 
@@ -270,5 +285,6 @@ elif st.session_state.phase == "result":
         for k in list(st.session_state.keys()):
             if k.startswith("k"):
                 del st.session_state[k]
+
 
 

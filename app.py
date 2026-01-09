@@ -11,28 +11,45 @@ st.set_page_config(page_title="CASINO POKER", layout="centered")
 # =========================
 # CSS（カジノ風UI）
 # =========================
-# 代替案：PILを使わずHTML/CSSでカードを作る
-def show_card_css(rank, suit):
-    color = "red" if suit in ["♥","♦"] else "black"
-    st.markdown(f"""
-    <div style="
-        width: 80px;
-        height: 120px;
-        background-color: white;
-        border: 2px solid black;
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: {color};
-        font-weight: bold;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-    ">
-        <div style="font-size: 20px;">{rank}</div>
-        <div style="font-size: 40px;">{suit}</div>
-    </div>
-    """, unsafe_allow_html=True)
+@st.cache_data
+def generate_card_image(rank, suit):
+    img = Image.new("RGB", (120, 180), "white")
+    draw = ImageDraw.Draw(img)
+
+    # OSごとのフォントパスのリスト（代表的なもの）
+    fonts_to_try = [
+        "C:/Windows/Fonts/msgothic.ttc",   # Windows
+        "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf", # Linux (Streamlit Cloud)
+        "/System/Library/Fonts/Hiragino Sans GB.ttc", # macOS
+        "C:/Windows/Fonts/seguiemj.ttf"    # Emoji
+    ]
+
+    font_big = None
+    font_small = None
+
+    for fpath in fonts_to_try:
+        try:
+            font_big = ImageFont.truetype(fpath, 48)
+            font_small = ImageFont.truetype(fpath, 32)
+            break # 読み込めたら終了
+        except:
+            continue
+
+    if font_big is None:
+        font_big = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+
+    color = "red" if suit in ["♥","♦","♡"] else "black"
+
+    # カードの外枠
+    draw.rectangle((0,0,119,179), outline="black", width=3)
+
+    # 左上の数字とスート
+    draw.text((8,5), f"{rank}{suit}", fill=color, font=font_small)
+    # 中央の大きなスート
+    draw.text((40,70), suit, fill=color, font=font_big)
+
+    return img
 
 st.title("🎰 CASINO POKER")
 
@@ -285,6 +302,7 @@ elif st.session_state.phase == "result":
         for k in list(st.session_state.keys()):
             if k.startswith("k"):
                 del st.session_state[k]
+
 
 
 

@@ -51,7 +51,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🎰 完全無料！　カジノポーカー")
+st.title("🎰 CASINO POKER")
 
 # =========================
 # 定義

@@ -51,7 +51,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🎰 CASINO POKER")
+st.title("🎰 ポーカー🎰")
 
 # =========================
 # 定義
@@ -285,4 +285,5 @@ elif st.session_state.phase == "result":
             if k.startswith("k"):
                 del st.session_state[k]
         st.rerun()
+
 

@@ -162,7 +162,7 @@ if "player_chip" not in st.session_state:
     st.session_state.game_over = False
 
 st.subheader(
-    f"🧑 あなた：{st.session_state.player_chip:,} 💰    "
+    f"🤪 あなた：{st.session_state.player_chip:,} 💰    "
     f"🤖 CPU：{st.session_state.cpu_chip:,} 💰"
 )
 st.divider()
@@ -275,6 +275,7 @@ elif st.session_state.phase == "result":
             if k.startswith("k"):
                 del st.session_state[k]
         st.rerun()
+
 
 
 

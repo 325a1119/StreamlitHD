@@ -275,7 +275,3 @@ elif st.session_state.phase == "result":
             if k.startswith("k"):
                 del st.session_state[k]
         st.rerun()
-
-
-
-

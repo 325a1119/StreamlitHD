@@ -5,7 +5,7 @@ import random
 
 st.set_page_config(page_title="CASINO POKER", layout="centered")
 
-# CSS（カジノ風UI）
+# CSS
 
 st.markdown("""
 <style>

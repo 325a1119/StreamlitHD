@@ -1,14 +1,12 @@
 import streamlit as st
 import random
 
-# =========================
 # ページ設定
-# =========================
+
 st.set_page_config(page_title="CASINO POKER", layout="centered")
 
-# =========================
 # CSS（カジノ風UI）
-# =========================
+
 st.markdown("""
 <style>
 .stApp {
@@ -53,9 +51,8 @@ st.markdown("""
 
 st.title("🎰 ポーカー🎰")
 
-# =========================
 # 定義
-# =========================
+
 SUITS = ["♠","♥","♦","♣"]
 RANKS = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"]
 RANK_VALUE = {r:i for i,r in enumerate(RANKS, start=2)}
@@ -85,9 +82,8 @@ HAND_EXAMPLE = {
     "ハイカード": "役なし"
 }
 
-# =========================
 # カード表示関数（HTML/CSS）
-# =========================
+
 def show_card(card):
     rank, suit = card
     color = "#d63031" if suit in ["♥","♦"] else "#2d3436"
@@ -101,9 +97,8 @@ def show_card(card):
     """
     st.markdown(card_html, unsafe_allow_html=True)
 
-# =========================
 # ゲームロジック
-# =========================
+
 def create_deck():
     deck = [(r,s) for s in SUITS for r in RANKS]
     random.shuffle(deck)
@@ -158,9 +153,8 @@ def cpu_change_indexes(hand):
         return [i for i,r in enumerate(ranks) if r!=pair]
     return random.sample(range(5),3)
 
-# =========================
 # 初期化
-# =========================
+
 if "player_chip" not in st.session_state:
     st.session_state.player_chip = 1_000_000
     st.session_state.cpu_chip = 1_000_000
@@ -173,9 +167,8 @@ st.subheader(
 )
 st.divider()
 
-# =========================
 # ゲームオーバー画面
-# =========================
+
 if st.session_state.game_over:
     if st.session_state.player_chip <= 0:
         st.error("💀 YOU LOSE... チップがなくなりました 💀")
@@ -187,9 +180,8 @@ if st.session_state.game_over:
             del st.session_state[k]
         st.rerun()
 
-# =========================
 # フェーズ：ベット
-# =========================
+
 elif st.session_state.phase == "bet":
     bet = st.number_input("ベット額を選択してください", 100, st.session_state.player_chip, 1000)
     if st.button("勝負を開始する"):
@@ -200,9 +192,8 @@ elif st.session_state.phase == "bet":
         st.session_state.phase = "draw"
         st.rerun()
 
-# =========================
 # フェーズ：ドロー（カード交換）
-# =========================
+
 elif st.session_state.phase == "draw":
     col1, col2 = st.columns([3, 1])
 
@@ -234,9 +225,8 @@ elif st.session_state.phase == "draw":
             for h in HAND_ORDER[::-1]:
                 st.markdown(f"**{h}** (x{HAND_MULTIPLIER[h]})")
 
-# =========================
 # フェーズ：結果発表
-# =========================
+
 elif st.session_state.phase == "result":
     p_role = evaluate(st.session_state.player_hand)
     c_role = evaluate(st.session_state.cpu_hand)
@@ -285,5 +275,6 @@ elif st.session_state.phase == "result":
             if k.startswith("k"):
                 del st.session_state[k]
         st.rerun()
+
 
 
